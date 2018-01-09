@@ -130,7 +130,7 @@ public class ApexSwagger {
             monitor.done();
 
         // we are done!
-        System.out.println("ApexDoc has completed!");
+        System.out.println("ApexSwagger has completed!");
     }
 
     private static void printHelp() {

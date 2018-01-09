@@ -1,4 +1,4 @@
-package org.salesforce.apexdoc;
+package org.salesforce.apexswagger;
 
 public class Constants {
         
