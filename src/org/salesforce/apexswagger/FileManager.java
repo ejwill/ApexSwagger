@@ -169,7 +169,7 @@ public class FileManager {
         createClassGroupContent(mapFNameToContent, links, projectDetail, mapGroupNameToClassGroup, cModels, monitor);
 
         // create our Base Path content files
-        createBasePathContent(mapFNameToContent, links, projectDetail, mapPathNameToBasePath, cModels, monitor);
+        //createBasePathContent(mapFNameToContent, links, projectDetail, mapPathNameToBasePath, cModels, monitor);
 
         for (ClassModel cModel : cModels) {
             String contents = links;

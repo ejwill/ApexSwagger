@@ -112,6 +112,14 @@ public class ApexModel {
         this.path = path;
     }
 
+    public String getBaseUrl() {
+        return baseUrl == null ? "" : baseUrl;
+    }
+
+    public void setBaseUrl(String baseUrl) {
+        this.baseUrl = baseUrl;
+    }
+
     private String nameLine;
     private int inameLine;
     private String description;
@@ -125,5 +133,6 @@ public class ApexModel {
     private String basePath;
     private String baseDescription;
     private String path;
+    private String baseUrl;
 
 }

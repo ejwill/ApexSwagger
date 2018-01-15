@@ -658,6 +658,14 @@ public class ApexSwagger {
                 inBaseDescription = false;
                 continue;
             }
+
+            idxStart = comment.toLowerCase().indexOf("@base-url");
+            if (idxStart != -1) {
+                cModel.setBasePath(comment.substring(idxStart + 9).trim());
+                inDescription = false;
+                inBaseDescription = false;
+                continue;
+            }
         }
     }
 
