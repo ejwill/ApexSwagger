@@ -1,5 +1,6 @@
 ApexSwagger
 =======
+[![Build Status](https://travis-ci.org/ejwill/ApexSwagger.svg?branch=develop)](https://travis-ci.org/ejwill/ApexSwagger)
 
 ApexSwagger is a java app that you can use to document your Salesforce Apex classes.  You tell ApexSwagger where your class files are, and it will generate a set of Swagger formatted JSON files that fully document each REST endpoint.  Command line parameters allow you to control many aspects of ApexSwagger.
 
