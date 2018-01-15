@@ -130,7 +130,7 @@ public class ApexSwagger {
         // create our set of HTML files
         fm.createDoc(mapGroupNameToClassGroup, cModels, projectDetail, homeContents, hostedSourceURL, monitor);
         // create our set of JSON files
-        fm.createJSONDoc(mapPathNameToBasePath, cModels, projectDetail, homeContents, hostedSourceURL, monitor);
+        //fm.createJSONDoc(mapPathNameToBasePath, cModels, projectDetail, homeContents, hostedSourceURL, monitor);
         
         if (monitor != null)
             monitor.done();

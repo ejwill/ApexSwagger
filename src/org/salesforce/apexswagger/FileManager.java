@@ -527,10 +527,10 @@ public class FileManager {
         makeFile(mapGroupNameToClassGroup, cModels, projectDetail, homeContents, hostedSourceURL, monitor);
     }
 
-    public void createJSONDoc(TreeMap<String, ClassGroup> map, ArrayList<ClassModel> cModels,
-            String projectDetail, String homeContents, String hostedSourceURL, IProgressMonitor monitor) {
-        makeFile(mapPathNameToBasePath, cModels, projectDetail, homeContents, hostedSourceURL, monitor);
-    }
+    // public void createJSONDoc(TreeMap<String, ClassGroup> map, ArrayList<ClassModel> cModels,
+    //         String projectDetail, String homeContents, String hostedSourceURL, IProgressMonitor monitor) {
+    //     makeFile(mapPathNameToBasePath, cModels, projectDetail, homeContents, hostedSourceURL, monitor);
+    // }
 
     private String parseFile(String filePath) {
         try {
