@@ -22,6 +22,8 @@ public class ClassModel extends ApexModel {
     private ClassModel cmodelParent;
     private ArrayList<ClassModel> childClasses;
     private boolean isInterface;
+    private String strClassBasePath;
+    private String strClassBasePathConent;
 
     public ArrayList<PropertyModel> getProperties() {
         return properties;
@@ -139,5 +141,24 @@ public class ClassModel extends ApexModel {
 
     public void setIsInterface(boolean isInterface) {
         this.isInterface = isInterface;
+    }
+
+    public String getClassBasePath() {
+        if (this.cmodelParent != null)
+            return cmodelParent.getClassBasePath();
+        else
+            return strClassBasePath;
+    }
+
+    public void setClassBasePath(String strBasePath) {
+        strClassBasePath = strBasePath;
+    }
+
+    public String getClassBasePathContent() {
+        return strClassBasePathConent;
+    }
+
+    public void setClassBasePathContent(String strBasePathContent) {
+        strClassBasePathConent = strBasePathContent;
     }
 }

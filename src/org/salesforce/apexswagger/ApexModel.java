@@ -66,10 +66,50 @@ public class ApexModel {
     private void parseScope() {
         scope = null;
         if (nameLine != null) {
-            String str = ApexDoc.strContainsScope(nameLine);
+            String str = ApexSwagger.strContainsScope(nameLine);
             if (str != null)
                 scope = str;
         }
+    }
+
+    public String getContact() {
+        return contact == null ? "" : contact;
+    }
+
+    public void setContact(String contact) {
+        this.contact = contact;
+    }
+
+    public String getVersion() {
+        return version == null ? "" : version;
+    }
+
+    public void setVersion(String version) {
+        this.version = version;
+    }
+
+    public String getBasePath() {
+        return basePath == null ? "" : basePath;
+    }
+
+    public void setBasePath(String basePath) {
+        this.basePath = basePath;
+    }
+
+    public String getBaseDescription() {
+        return baseDescription == null ? "" : baseDescription;
+    }
+
+    public void setBaseDescription(String baseDescription) {
+        this.baseDescription = baseDescription;
+    }
+
+    public String getPath() {
+        return path == null ? "" : path;
+    }
+
+    public void setPath(String path) {
+        this.path = path;
     }
 
     private String nameLine;
@@ -80,5 +120,10 @@ public class ApexModel {
     private String returns;
     private String scope;
     private String example;
+    private String contact;
+    private String version;
+    private String basePath;
+    private String baseDescription;
+    private String path;
 
 }

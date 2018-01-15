@@ -39,7 +39,7 @@ public class MethodModel extends ApexModel {
         if (nameLine != null && nameLine.length() > 0) {
             int lastindex = nameLine.indexOf("(");
             if (lastindex >= 0) {
-                String methodName = ApexDoc.strPrevWord(nameLine, lastindex);
+                String methodName = ApexSwagger.strPrevWord(nameLine, lastindex);
                 return methodName;
             }
         }

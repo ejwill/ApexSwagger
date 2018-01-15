@@ -45,7 +45,7 @@ public class ApexSwagger {
     // public entry point when called from the Eclipse PlugIn.
     // assumes PlugIn previously sets rgstrArgs before calling run.
     public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
-        RunApexDoc(rgstrArgs, monitor);
+        RunApexSwagger(rgstrArgs, monitor);
     }
 
     // public main routine which is used by both command line invocation and
@@ -116,6 +116,9 @@ public class ApexSwagger {
         // create our Groups
         TreeMap<String, ClassGroup> mapGroupNameToClassGroup = createMapGroupNameToClassGroup(cModels, sourceDirectory);
 
+        // create our Base Paths
+        TreeMap<String, ClassGroup> mapPathNameToBasePath = createMapPathNameToBasePath(cModels, sourceDirectory);
+
         // load up optional specified file templates
         String projectDetail = fm.parseHTMLFile(authorfilepath);
         if (monitor != null)
@@ -126,6 +129,9 @@ public class ApexSwagger {
 
         // create our set of HTML files
         fm.createDoc(mapGroupNameToClassGroup, cModels, projectDetail, homeContents, hostedSourceURL, monitor);
+        // create our set of JSON files
+        fm.createJSONDoc(mapPathNameToBasePath, cModels, projectDetail, homeContents, hostedSourceURL, monitor);
+        
         if (monitor != null)
             monitor.done();
 
@@ -162,6 +168,28 @@ public class ApexSwagger {
                     cg.setContentSource(strGroupContent);
                 // put the new or potentially modified ClassGroup back in the map
                 map.put(strGroup, cg);
+            }
+        }
+        return map;
+    }
+
+    private static TreeMap<String, ClassGroup> createMapPathNameToBasePath(ArrayList<ClassModel> cModels,
+        String sourceDirectory) {
+        TreeMap<String, ClassGroup> map = new TreeMap<String, ClassGroup>();
+        for (ClassModel cmodel : cModels) {
+            String strBasePath = cmodel.getClassBasePath();
+            String strBasePathContent = cmodel.getClassBasePathContent();
+            if (strBasePathContent != null)
+            strBasePathContent = sourceDirectory + "/" + strBasePathContent;
+            ClassGroup cg;
+            if (strBasePath != null) {
+                cg = map.get(strBasePath);
+                if (cg == null)
+                    cg = new ClassGroup(strBasePath, strBasePathContent);
+                else if (cg.getContentSource() == null)
+                    cg.setContentSource(strBasePathContent);
+                // put the new or potentially modified ClassGroup back in the map
+                map.put(strBasePath, cg);
             }
         }
         return map;
@@ -501,6 +529,7 @@ public class ApexSwagger {
         if (name.toLowerCase().contains(" interface "))
             cModel.setIsInterface(true);
         boolean inDescription = false;
+        boolean inBaseDescription = false;
         int i = 0;
         for (String comment : lstComments) {
         	i++;
@@ -510,6 +539,7 @@ public class ApexSwagger {
             if (idxStart != -1) {
                 cModel.setAuthor(comment.substring(idxStart + 7).trim());
                 inDescription = false;
+                inBaseDescription = false;
                 continue;
             }
 
@@ -517,6 +547,7 @@ public class ApexSwagger {
             if (idxStart != -1) {
                 cModel.setDate(comment.substring(idxStart + 5).trim());
                 inDescription = false;
+                inBaseDescription = false;
                 continue;
             }
 
@@ -524,6 +555,7 @@ public class ApexSwagger {
             if (idxStart != -1) {
                 cModel.setClassGroup(comment.substring(idxStart + 6).trim());
                 inDescription = false;
+                inBaseDescription = false;
                 continue;
             }
 
@@ -531,6 +563,7 @@ public class ApexSwagger {
             if (idxStart != -1) {
                 cModel.setClassGroupContent(comment.substring(idxStart + 14).trim());
                 inDescription = false;
+                inBaseDescription = false;
                 continue;
             }
 
@@ -546,6 +579,7 @@ public class ApexSwagger {
                 	}
                 }
                 inDescription = true;
+                inBaseDescription = false;
                 continue;
             }
 
@@ -560,6 +594,68 @@ public class ApexSwagger {
                 if (j < comment.length()) {
                     cModel.setDescription(cModel.getDescription() + ' ' + comment.substring(j));
                 }
+                continue;
+            }
+
+            idxStart = comment.toLowerCase().indexOf("@contact");
+            if (idxStart != -1) {
+                cModel.setContact(comment.substring(idxStart + 8).trim());
+                inDescription = false;
+                inBaseDescription = false;
+                continue;
+            }
+
+            idxStart = comment.toLowerCase().indexOf("@version");
+            if (idxStart != -1) {
+                cModel.setVersion(comment.substring(idxStart + 8).trim());
+                inDescription = false;
+                inBaseDescription = false;
+                continue;
+            }
+
+            idxStart = comment.toLowerCase().indexOf("@base-bath");
+            if (idxStart != -1) {
+                cModel.setBasePath(comment.substring(idxStart + 10).trim());
+                inDescription = false;
+                inBaseDescription = false;
+                continue;
+            }
+
+            idxStart = comment.toLowerCase().indexOf("@base-description");
+            if (idxStart != -1 || i == 1) {
+            	if (idxStart != -1 && comment.length() > idxStart + 17)
+            		cModel.setBaseDescription(comment.substring(idxStart + 16).trim());
+            	else{
+                	Pattern p = Pattern.compile("\\s");
+                	Matcher m = p.matcher(comment);
+                	if (m.find()) {
+                		cModel.setBaseDescription(comment.substring(m.start()).trim());
+                	}
+                }
+                inDescription = false;
+                inBaseDescription = true;
+                continue;
+            }
+
+            // handle multiple lines for description.
+            if (inBaseDescription) {
+                int j;
+                for (j = 0; j < comment.length(); j++) {
+                    char ch = comment.charAt(j);
+                    if (ch != '*' && ch != ' ')
+                        break;
+                }
+                if (j < comment.length()) {
+                    cModel.setDescription(cModel.getDescription() + ' ' + comment.substring(j));
+                }
+                continue;
+            }
+
+            idxStart = comment.toLowerCase().indexOf("@path");
+            if (idxStart != -1) {
+                cModel.setBasePath(comment.substring(idxStart + 5).trim());
+                inDescription = false;
+                inBaseDescription = false;
                 continue;
             }
         }
@@ -615,32 +711,38 @@ public class ApexSwagger {
         return count;
     }
 
-    /*
-     * private static void debug(ClassModel cModel){ try{
-     * System.out.println("Class::::::::::::::::::::::::");
-     * if(cModel.getClassName() != null)
-     * System.out.println(cModel.getClassName()); if(cModel.getNameLine() !=
-     * null) System.out.println(cModel.getNameLine());
-     * System.out.println(cModel.getAuthor());
-     * System.out.println(cModel.getDescription());
-     * System.out.println(cModel.getDate());
-     *
-     * System.out.println("Properties::::::::::::::::::::::::"); for
-     * (PropertyModel property : cModel.getProperties()) {
-     * System.out.println(property.getNameLine());
-     * System.out.println(property.getDescription()); }
-     *
-     * System.out.println("Methods::::::::::::::::::::::::"); for (MethodModel
-     * method : cModel.getMethods()) {
-     * System.out.println(method.getMethodName());
-     * System.out.println(method.getAuthor());
-     * System.out.println(method.getDescription());
-     * System.out.println(method.getDate()); for (String param :
-     * method.getParams()) { System.out.println(param); }
-     *
-     * }
-     *
-     * }catch (Exception e){ e.printStackTrace(); } }
-     */
+    
+    //   private static void debug(ClassModel cModel){ try{
+    //   System.out.println("Class::::::::::::::::::::::::");
+    //   if(cModel.getClassName() != null)
+    //   System.out.println(cModel.getClassName()); if(cModel.getNameLine() !=
+    //   null) System.out.println(cModel.getNameLine());
+    //   System.out.println(cModel.getAuthor());
+    //   System.out.println(cModel.getDescription());
+    //   System.out.println(cModel.getDate());
+    //   System.out.println(cModel.getBasePath());
+    //   System.out.println(cModel.getBaseDescription());
+    //   System.out.println(cModel.getContact());
+    //   System.out.println(cModel.getVersion());
+    //   System.out.println(cModel.getPath());
+    
+     
+    //   System.out.println("Properties::::::::::::::::::::::::"); for
+    //   (PropertyModel property : cModel.getProperties()) {
+    //   System.out.println(property.getNameLine());
+    //   System.out.println(property.getDescription()); }
+     
+    //   System.out.println("Methods::::::::::::::::::::::::"); for (MethodModel
+    //   method : cModel.getMethods()) {
+    //   System.out.println(method.getMethodName());
+    //   System.out.println(method.getAuthor());
+    //   System.out.println(method.getDescription());
+    //   System.out.println(method.getDate()); for (String param :
+    //   method.getParams()) { System.out.println(param); }
+     
+    //   }
+     
+    //   }catch (Exception e){ e.printStackTrace(); } }
+    
 
 }

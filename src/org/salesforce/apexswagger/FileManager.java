@@ -84,6 +84,40 @@ public class FileManager {
         return false;
     }
 
+    private boolean createJSON(TreeMap<String, String> mapFNameToContent, IProgressMonitor monitor) {
+        try {
+            if (path.endsWith("/") || path.endsWith("\\")) {
+                path += Constants.ROOT_DIRECTORY; // + "/" + fileName + ".json";
+            } else {
+                path += "/" + Constants.ROOT_DIRECTORY; // + "/" + fileName + ".json";
+            }
+
+            (new File(path)).mkdirs();
+
+            for (String fileName : mapFNameToContent.keySet()) {
+                String contents = mapFNameToContent.get(fileName);
+                fileName = path + "/" + fileName + ".json";
+                File file = new File(fileName);
+                fos = new FileOutputStream(file);
+                dos = new DataOutputStream(fos);
+                dos.write(contents.getBytes());
+                dos.close();
+                fos.close();
+                infoMessages.append(fileName + " Processed...\n");
+                System.out.println(fileName + " Processed...");
+                if (monitor != null)
+                    monitor.worked(1);
+            }
+            copy(path);
+            return true;
+        } catch (Exception e) {
+
+            e.printStackTrace();
+        }
+
+        return false;
+    }
+
     private String strLinkfromModel(ApexModel model, String strClassName, String hostedSourceURL) {
         return "<a target='_blank' class='hostedSourceLink' href='" + hostedSourceURL + strClassName + ".cls#L"
                 + model.getInameLine() + "'>";
@@ -93,10 +127,10 @@ public class FileManager {
         String str = "<tr><td colspan='2' style='text-align: center;' >";
         str += "Show: ";
 
-        for (int i = 0; i < ApexDoc.rgstrScope.length; i++) {
-            str += "<input type='checkbox' checked='checked' id='cbx" + ApexDoc.rgstrScope[i] +
-                    "' onclick='ToggleScope(\"" + ApexDoc.rgstrScope[i] + "\", this.checked );'>" +
-                    ApexDoc.rgstrScope[i] + "</input>&nbsp;&nbsp;";
+        for (int i = 0; i < ApexSwagger.rgstrScope.length; i++) {
+            str += "<input type='checkbox' checked='checked' id='cbx" + ApexSwagger.rgstrScope[i] +
+                    "' onclick='ToggleScope(\"" + ApexSwagger.rgstrScope[i] + "\", this.checked );'>" +
+                    ApexSwagger.rgstrScope[i] + "</input>&nbsp;&nbsp;";
         }
         str += "</td></tr>";
         return str;
@@ -134,6 +168,9 @@ public class FileManager {
         // create our Class Group content files
         createClassGroupContent(mapFNameToContent, links, projectDetail, mapGroupNameToClassGroup, cModels, monitor);
 
+        // create our Base Path content files
+        createBasePathContent(mapFNameToContent, links, projectDetail, mapPathNameToBasePath, cModels, monitor);
+
         for (ClassModel cModel : cModels) {
             String contents = links;
             if (cModel.getNameLine() != null && cModel.getNameLine().length() > 0) {
@@ -160,6 +197,62 @@ public class FileManager {
         }
         createHTML(mapFNameToContent, monitor);
     }
+
+    // /********************************************************************************************
+    //  * @description main routine that creates an JSON file for each class specified
+    //  * @param mapGroupNameToClassGroup
+    //  * @param cModels
+    //  * @param projectDetail
+    //  * @param homeContents
+    //  * @param hostedSourceURL
+    //  * @param monitor
+    //  */
+    // private void makeFileJson(TreeMap<String, ClassGroup> mapGroupNameToClassGroup, ArrayList<ClassModel> cModels,
+    // String projectDetail, String homeContents, String hostedSourceURL, IProgressMonitor monitor) {
+    // String tabs = "\t";
+
+    // // if (homeContents != null && homeContents.trim().length() > 0) {
+    // //     homeContents = links + "<td class='contentTD'>" + "<h2 class='section-title'>Home</h2>" + homeContents + "</td>";
+    // //     homeContents = Constants.getHeader(projectDetail) + homeContents + Constants.FOOTER;
+    // // } else {
+    // //     homeContents = Constants.DEFAULT_HOME_CONTENTS;
+    // //     homeContents = links + "<td class='contentTD'>" + "<h2 class='section-title'>Home</h2>" + homeContents + "</td>";
+    // //     homeContents = Constants.getHeader(projectDetail) + homeContents + Constants.FOOTER;
+    // // }
+
+    // String fileName = "";
+    // // TreeMap<String, String> mapFNameToContent = new TreeMap<String, String>();
+    // // mapFNameToContent.put("index", homeContents);
+
+    // // create our Class Group content files
+    // createClassGroupContent(mapFNameToContent, links, projectDetail, mapGroupNameToClassGroup, cModels, monitor);
+
+    // for (ClassModel cModel : cModels) {
+    //     String contents = links;
+    //     if (cModel.getNameLine() != null && cModel.getNameLine().length() > 0) {
+    //         fileName = cModel.getClassName();
+    //         contents += "<td class='contentTD'>";
+
+    //         contents += htmlForClassModel(cModel, hostedSourceURL);
+
+    //         // deal with any nested classes
+    //         for (ClassModel cmChild : cModel.getChildClassesSorted()) {
+    //             contents += "<p/>";
+    //             contents += htmlForClassModel(cmChild, hostedSourceURL);
+    //         }
+
+    //     } else {
+    //         continue;
+    //     }
+    //     contents += "</div>";
+
+    //     contents = Constants.getHeader(projectDetail) + contents + Constants.FOOTER;
+    //     mapFNameToContent.put(fileName, contents);
+    //     if (monitor != null)
+    //         monitor.worked(1);
+    // }
+    // createHTML(mapFNameToContent, monitor);
+    // }
 
     /*********************************************************************************************
      * @description creates the HTML for the provided class, including its
@@ -434,6 +527,11 @@ public class FileManager {
         makeFile(mapGroupNameToClassGroup, cModels, projectDetail, homeContents, hostedSourceURL, monitor);
     }
 
+    public void createJSONDoc(TreeMap<String, ClassGroup> map, ArrayList<ClassModel> cModels,
+            String projectDetail, String homeContents, String hostedSourceURL, IProgressMonitor monitor) {
+        makeFile(mapPathNameToBasePath, cModels, projectDetail, homeContents, hostedSourceURL, monitor);
+    }
+
     private String parseFile(String filePath) {
         try {
             if (filePath != null && filePath.trim().length() > 0) {
@@ -451,7 +549,7 @@ public class FileManager {
                         contents += strLine;
                     }
                 }
-                // System.out.println("Contents = " + contents);
+                 System.out.println("Contents = " + contents);
                 br.close();
                 return contents;
             }
